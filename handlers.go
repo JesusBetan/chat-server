@@ -19,11 +19,18 @@ func createChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat.Id = uuid.New().String()      // Genera un ID único para el chat
-	chat.Clients = []*websocket.Conn{} // Inicializa la lista de clientes
-	chats[chat.Id] = &chat
+	//get user by id
+	user := getUserById(chat.CreatorId)
 
-	json.NewEncoder(w).Encode(map[string]string{"id-chat": chat.Id})
+	chat.Id = uuid.New().String()      // Genera un ID único para el chat
+	chat.ShortId = chat.Id[:4]         // Genera un ID corto para el chat
+	chat.Messages = []Message{}        // Inicializa la lista de mensajes
+	chat.Users = []*User{user}         // Inicializa la lista de usuarios
+	chat.Clients = []*websocket.Conn{} // Inicializa la lista de clientes
+
+	chats[chat.ShortId] = &chat
+
+	json.NewEncoder(w).Encode(map[string]string{"id-chat": chat.ShortId})
 }
 
 func getChat(w http.ResponseWriter, r *http.Request) {
@@ -39,21 +46,21 @@ func getChat(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(chat)
 }
 
-func getChatIDs(w http.ResponseWriter, r *http.Request) {
+func getUserChats(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id-user"]
 
-	var chatIDs []string
-	for id, chat := range chats {
-		for _, msg := range chat.Messages {
-			if msg.SenderId == userID {
-				chatIDs = append(chatIDs, id)
+	var userChats []string
+	for _, chat := range chats {
+		for _, user := range chat.Users {
+			if user.Id == userID {
+				userChats = append(userChats, chat.ShortId)
 				break
 			}
 		}
 	}
 
-	json.NewEncoder(w).Encode(chatIDs)
+	json.NewEncoder(w).Encode(userChats)
 }
 
 func getMessages(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +94,10 @@ func joinChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Simula unirse al chat añadiendo un mensaje automático
+	// Unir al usuario al chat
+	chat.Users = append(chat.Users, getUserById(user.ID))
+
+	// Añadir un mensaje automático
 	chat.Messages = append(chat.Messages, Message{
 		Id:        uuid.New().String(),
 		SenderId:  user.ID,
@@ -101,4 +111,13 @@ func joinChat(w http.ResponseWriter, r *http.Request) {
 		Content:   fmt.Sprintf("Usuario %s se ha unido al chat.", user.ID),
 		Timestamp: time.Now(),
 	})
+}
+
+func getUserById(id string) *User {
+	for _, user := range users {
+		if user.Id == id {
+			return user
+		}
+	}
+	return nil
 }
