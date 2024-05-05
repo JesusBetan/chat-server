@@ -19,11 +19,24 @@ func createChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat.ID = uuid.New().String()      // Genera un ID único para el chat
+	chat.Id = uuid.New().String()      // Genera un ID único para el chat
 	chat.Clients = []*websocket.Conn{} // Inicializa la lista de clientes
-	chats[chat.ID] = &chat
+	chats[chat.Id] = &chat
 
-	json.NewEncoder(w).Encode(map[string]string{"id-chat": chat.ID})
+	json.NewEncoder(w).Encode(map[string]string{"id-chat": chat.Id})
+}
+
+func getChat(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	chatID := vars["id-chat"]
+
+	chat, ok := chats[chatID]
+	if !ok {
+		http.Error(w, "Chat no encontrado", http.StatusNotFound)
+		return
+	}
+
+	json.NewEncoder(w).Encode(chat)
 }
 
 func getChatIDs(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +46,7 @@ func getChatIDs(w http.ResponseWriter, r *http.Request) {
 	var chatIDs []string
 	for id, chat := range chats {
 		for _, msg := range chat.Messages {
-			if msg.SenderID == userID {
+			if msg.SenderId == userID {
 				chatIDs = append(chatIDs, id)
 				break
 			}
@@ -76,15 +89,15 @@ func joinChat(w http.ResponseWriter, r *http.Request) {
 
 	// Simula unirse al chat añadiendo un mensaje automático
 	chat.Messages = append(chat.Messages, Message{
-		ID:        uuid.New().String(),
-		SenderID:  user.ID,
+		Id:        uuid.New().String(),
+		SenderId:  user.ID,
 		Content:   "¡Me he unido al chat!",
 		Timestamp: time.Now(),
 	})
 
 	notifyClients(chat.Clients, Message{
-		ID:        uuid.New().String(),
-		SenderID:  "system",
+		Id:        uuid.New().String(),
+		SenderId:  "system",
 		Content:   fmt.Sprintf("Usuario %s se ha unido al chat.", user.ID),
 		Timestamp: time.Now(),
 	})

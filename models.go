@@ -7,15 +7,19 @@ import (
 )
 
 type Chat struct {
-	ID        string            `json:"id"`
-	CreatorID string            `json:"creator_id"`
-	Messages  []Message         `json:"messages"`
-	Clients   []*websocket.Conn `json:"-"`
+	Id                  string            `json:"id"`
+	CreatorId           string            `json:"creator_id"`
+	Name                string            `json:"name"`
+	LastMessageUsername string            `json:"last_message_username"`
+	LastMessage         string            `json:"last_message"`
+	LastMessageDateTime time.Time         `json:"last_message_datetime"`
+	Messages            []Message         `json:"messages"`
+	Clients             []*websocket.Conn `json:"-"`
 }
 
 type Message struct {
-	ID        string    `json:"id"`
-	SenderID  string    `json:"sender_id"`
+	Id        string    `json:"id"`
+	SenderId  string    `json:"sender_id"`
 	Content   string    `json:"content"`
 	Timestamp time.Time `json:"timestamp"`
 }
