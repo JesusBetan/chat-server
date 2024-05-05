@@ -19,9 +19,9 @@ func main() {
 }
 
 func setupRoutes(router *mux.Router) {
+	router.HandleFunc("{id-user}/chats", getChatIDs).Methods("GET")
 	router.HandleFunc("/chats", createChat).Methods("POST")
 	router.HandleFunc("/chats/{id-chat}", getChat).Methods("GET")
-	router.HandleFunc("/chats/{id-user}", getChatIDs).Methods("GET")
 	router.HandleFunc("/chats/{id-chat}/messages", getMessages).Methods("GET")
 	router.HandleFunc("/chats/{id-chat}/users", joinChat).Methods("POST")
 	router.HandleFunc("/ws/{id-chat}", handleConnections)
