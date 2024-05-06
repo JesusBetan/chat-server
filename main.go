@@ -18,7 +18,10 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	//Initialize data
+	users = make(map[string]*User)
 	chats = getChatsMock()
+
 	router := mux.NewRouter()
 	router.Use(loggingMiddleware)
 
@@ -29,6 +32,7 @@ func main() {
 }
 
 func setupRoutes(router *mux.Router) {
+	router.HandleFunc("/users", createUser).Methods("POST")
 	router.HandleFunc("/{id-user}/chats", getUserChats).Methods("GET")
 	router.HandleFunc("/chats", createChat).Methods("POST")
 	router.HandleFunc("/chats/{id-chat}", getChat).Methods("GET")

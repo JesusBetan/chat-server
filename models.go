@@ -16,6 +16,7 @@ type Chat struct {
 	ShortId             string            `json:"shortId"`
 	CreatorId           string            `json:"creatorId"`
 	Name                string            `json:"name"`
+	Description         string            `json:"description"`
 	LastMessageUsername string            `json:"lastMessageUsername"`
 	LastMessage         string            `json:"lastMessage"`
 	LastMessageDateTime time.Time         `json:"lastMessageDateTime"`

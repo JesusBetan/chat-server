@@ -22,6 +22,7 @@ func getChatsMock() map[string]*Chat {
 			ShortId:             "ABC1",
 			CreatorId:           "1",
 			Name:                "Chat 1",
+			Description:         "Descripción del chat 1",
 			LastMessageUsername: "User 1",
 			LastMessage:         "Hola",
 			LastMessageDateTime: time.Now(),
@@ -34,6 +35,7 @@ func getChatsMock() map[string]*Chat {
 			ShortId:             "ABC2",
 			CreatorId:           "2",
 			Name:                "Chat 2",
+			Description:         "Descripción del chat 2",
 			LastMessageUsername: "User 2",
 			LastMessage:         "Hola",
 			LastMessageDateTime: time.Now(),
@@ -55,15 +57,31 @@ func createChat(w http.ResponseWriter, r *http.Request) {
 	//get user by id
 	user := getUserById(chat.CreatorId)
 
+	var chatUsers = []*User{user}
+
 	chat.Id = uuid.New().String()      // Genera un ID único para el chat
-	chat.ShortId = chat.Id[:4]         // Genera un ID corto para el chat
+	chat.ShortId = chat.Id[:6]         // Genera un ID corto para el chat
 	chat.Messages = []Message{}        // Inicializa la lista de mensajes
-	chat.Users = []*User{user}         // Inicializa la lista de usuarios
+	chat.Users = chatUsers             // Inicializa la lista de usuarios
 	chat.Clients = []*websocket.Conn{} // Inicializa la lista de clientes
 
 	chats[chat.ShortId] = &chat
 
-	json.NewEncoder(w).Encode(map[string]string{"id-chat": chat.ShortId})
+	json.NewEncoder(w).Encode(chat)
+}
+
+func createUser(w http.ResponseWriter, r *http.Request) {
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, "Error al decodificar la solicitud", http.StatusBadRequest)
+		return
+	}
+
+	user.Id = uuid.New().String()
+	users[user.Id] = &user
+
+	json.NewEncoder(w).Encode(user)
 }
 
 func getChat(w http.ResponseWriter, r *http.Request) {
