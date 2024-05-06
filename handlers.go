@@ -11,6 +11,39 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var users map[string]*User
+
+var chats map[string]*Chat
+
+func getChatsMock() map[string]*Chat {
+	return map[string]*Chat{
+		"ABC1": {
+			Id:                  "1",
+			ShortId:             "ABC1",
+			CreatorId:           "1",
+			Name:                "Chat 1",
+			LastMessageUsername: "User 1",
+			LastMessage:         "Hola",
+			LastMessageDateTime: time.Now(),
+			Messages:            []Message{},
+			Users:               []*User{{Id: "123456", Username: "User 1"}},
+			Clients:             []*websocket.Conn{},
+		},
+		"ABC2": {
+			Id:                  "2",
+			ShortId:             "ABC2",
+			CreatorId:           "2",
+			Name:                "Chat 2",
+			LastMessageUsername: "User 2",
+			LastMessage:         "Hola",
+			LastMessageDateTime: time.Now(),
+			Messages:            []Message{},
+			Users:               []*User{{Id: "1", Username: "User 1"}},
+			Clients:             []*websocket.Conn{},
+		},
+	}
+}
+
 func createChat(w http.ResponseWriter, r *http.Request) {
 	var chat Chat
 	err := json.NewDecoder(r.Body).Decode(&chat)
@@ -50,11 +83,11 @@ func getUserChats(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id-user"]
 
-	var userChats []string
+	var userChats []*Chat
 	for _, chat := range chats {
 		for _, user := range chat.Users {
 			if user.Id == userID {
-				userChats = append(userChats, chat.ShortId)
+				userChats = append(userChats, chat)
 				break
 			}
 		}
