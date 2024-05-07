@@ -130,9 +130,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 func joinChat(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	chatID := vars["id-chat"]
-	var user struct {
-		ID string `json:"id-user"`
-	}
+	var user User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		http.Error(w, "Error al decodificar la solicitud", http.StatusBadRequest)
@@ -146,12 +144,12 @@ func joinChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Unir al usuario al chat
-	chat.Users = append(chat.Users, getUserById(user.ID))
+	chat.Users = append(chat.Users, getUserById(user.Id))
 
 	// Añadir un mensaje automático
 	chat.Messages = append(chat.Messages, Message{
 		Id:        uuid.New().String(),
-		SenderId:  user.ID,
+		SenderId:  user.Id,
 		Content:   "¡Me he unido al chat!",
 		Timestamp: time.Now(),
 	})
@@ -159,7 +157,7 @@ func joinChat(w http.ResponseWriter, r *http.Request) {
 	notifyClients(chat.Clients, Message{
 		Id:        uuid.New().String(),
 		SenderId:  "system",
-		Content:   fmt.Sprintf("Usuario %s se ha unido al chat.", user.ID),
+		Content:   fmt.Sprintf("Usuario %s se ha unido al chat.", user.Id),
 		Timestamp: time.Now(),
 	})
 }
