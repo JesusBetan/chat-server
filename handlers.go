@@ -127,6 +127,31 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(chat.Messages)
 }
 
+func createMessage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	chatID := vars["id-chat"]
+	var message Message
+	err := json.NewDecoder(r.Body).Decode(&message)
+	if err != nil {
+		http.Error(w, "Error al decodificar la solicitud", http.StatusBadRequest)
+		return
+	}
+
+	message.Id = uuid.New().String()
+
+	chat, ok := chats[chatID]
+	if !ok {
+		http.Error(w, "Chat no encontrado", http.StatusNotFound)
+		return
+	}
+
+	chat.LastMessageUsername = getUserById(message.SenderId).Username
+	chat.LastMessage = message.Content
+	chat.Messages = append(chat.Messages, message)
+
+	notifyClients(chat.Clients, message)
+}
+
 func joinChat(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	chatID := vars["id-chat"]
@@ -148,17 +173,17 @@ func joinChat(w http.ResponseWriter, r *http.Request) {
 
 	// Añadir un mensaje automático
 	chat.Messages = append(chat.Messages, Message{
-		Id:        uuid.New().String(),
-		SenderId:  user.Id,
-		Content:   "¡Me he unido al chat!",
-		Timestamp: time.Now(),
+		Id:       uuid.New().String(),
+		SenderId: user.Id,
+		Content:  "¡Me he unido al chat!",
+		DateTime: CustomTime{time.Now()},
 	})
 
 	notifyClients(chat.Clients, Message{
-		Id:        uuid.New().String(),
-		SenderId:  "system",
-		Content:   fmt.Sprintf("Usuario %s se ha unido al chat.", user.Id),
-		Timestamp: time.Now(),
+		Id:       uuid.New().String(),
+		SenderId: "system",
+		Content:  fmt.Sprintf("Usuario %s se ha unido al chat.", user.Id),
+		DateTime: CustomTime{time.Now()},
 	})
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -26,8 +27,26 @@ type Chat struct {
 }
 
 type Message struct {
-	Id        string    `json:"id"`
-	SenderId  string    `json:"senderId"`
-	Content   string    `json:"content"`
-	Timestamp time.Time `json:"timestamp"`
+	Id             string     `json:"id"`
+	SenderId       string     `json:"senderId"`
+	SenderUsername string     `json:"senderUsername"`
+	Content        string     `json:"content"`
+	DateTime       CustomTime `json:"dateTime"`
+}
+
+// CustomTime is a custom time.Time type that allows us to parse
+// a custom time format
+type CustomTime struct {
+	time.Time
+}
+
+const ctLayout = "Jan 2, 2006 3:04:05 PM" // replace with your time format
+func (ct *CustomTime) UnmarshalJSON(b []byte) (err error) {
+	s := strings.Trim(string(b), "\"")
+	if s == "null" {
+		ct.Time = time.Time{}
+		return
+	}
+	ct.Time, err = time.Parse(ctLayout, s)
+	return
 }
