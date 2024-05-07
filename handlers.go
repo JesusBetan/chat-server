@@ -101,7 +101,7 @@ func getUserChats(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id-user"]
 
-	var userChats []*Chat
+	var userChats []*Chat = []*Chat{}
 	for _, chat := range chats {
 		for _, user := range chat.Users {
 			if user.Id == userID {
