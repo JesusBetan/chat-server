@@ -173,10 +173,11 @@ func joinChat(w http.ResponseWriter, r *http.Request) {
 
 	// Añadir un mensaje automático
 	chat.Messages = append(chat.Messages, Message{
-		Id:       uuid.New().String(),
-		SenderId: user.Id,
-		Content:  "¡Me he unido al chat!",
-		DateTime: CustomTime{time.Now()},
+		Id:             uuid.New().String(),
+		SenderId:       user.Id,
+		SenderUsername: user.Username,
+		Content:        "¡Me he unido al chat!",
+		DateTime:       CustomTime{time.Now()},
 	})
 
 	notifyClients(chat.Clients, Message{
